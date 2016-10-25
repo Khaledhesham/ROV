@@ -74,6 +74,7 @@ void MainWindow::updateStates() {
                     QByteArray button_bytes;
                     button_bytes.insert(0,button);
                     _pSocket->write( button_bytes);
+                    _pSocket->waitForBytesWritten();
                 }
                 else if (!sf::Joystick::isButtonPressed(0, key) && itt.value()) {
                     joystick[itt.key()] = 0;
@@ -88,6 +89,7 @@ void MainWindow::updateStates() {
                     QByteArray axis_bytes;
                     axis_bytes.insert(0,axis);
                     _pSocket->write( axis_bytes);
+                    _pSocket->waitForBytesWritten();
                 }
             }
             ++itt;
