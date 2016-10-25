@@ -70,14 +70,14 @@ void MainWindow::updateStates() {
             {
                 if (sf::Joystick::isButtonPressed(0, key) && !(itt.value())) {
                     joystick[itt.key()] = 1;
+                    QString button = itt.key() + QString(" ") + QString::number(itt.value());
+                    QByteArray button_bytes;
+                    button_bytes.insert(0,button);
+                    _pSocket->write( button_bytes);
                 }
                 else if (!sf::Joystick::isButtonPressed(0, key) && itt.value()) {
                     joystick[itt.key()] = 0;
                 }
-                QString button = itt.key() + QString(" ") + QString::number(itt.value());
-                QByteArray button_bytes;
-                button_bytes.insert(0,button);
-                _pSocket->write( button_bytes);
             }
             else {
                 int AxisValue = getAxisValue(itt.key());
@@ -91,6 +91,7 @@ void MainWindow::updateStates() {
                 }
             }
             ++itt;
+
         }
     }
 }
@@ -101,6 +102,7 @@ void MainWindow::connectTcp()
     connect( _pSocket, SIGNAL(readyRead()), this, SLOT(readTcpData()) );
     _pSocket->connectToHost(QHostAddress("127.0.0.1"), 9000);
     _pSocket->waitForConnected();
+    _pSocket->write(QByteArray("hello"));
 }
 
 void MainWindow::readTcpData()
