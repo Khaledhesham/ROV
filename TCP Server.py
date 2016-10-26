@@ -14,17 +14,20 @@ s.listen(1)
 
 def CalculateHorizontalMotors():
    resultant = math.hypot(axis['x'], axis['y'])
-   theta = math.atan2(axis['y'], axis['x'])
+   theta = math.atan2(axis['x'], axis['y'])
+   # alfa = 45 deg - theta
    alfa = 0.785398 - theta
-   RightComponent = resultant * math.cos(alfa)
-   LeftComponent = resultant * math.sin(alfa)
+   # maximum factor is 1/ cosine of angle difference between resulatnt angle and nearest 45 deg coordinate 
+   maximum_factor = 1 / (math.cos( 0.785398 - abs(theta) + (int(abs(theta) / 1.5708)*1.5708) ))
+   RightComponent = resultant * math.cos(alfa) * maximum_factor
+   LeftComponent = resultant * math.sin(alfa) * maximum_factor
    pwm_list[0] = int(1440 + (RightComponent * 8.1))
    print "front right thruster: ", pwm_list[0]
    pwm_list[1] = int(1440 + (LeftComponent * 8.1)) 
    print "front left thruster: ", pwm_list[1]
-   pwm_list[2] = int(1440 - (RightComponent * 8.1)) 
+   pwm_list[2] = int(1440 - (LeftComponent * 8.1)) 
    print "back right thruster: ", pwm_list[2]
-   pwm_list[3] = int(1440 - (LeftComponent * 8.1)) 
+   pwm_list[3] = int(1440 - (RightComponent * 8.1)) 
    print "back left thruster: ", pwm_list[3]
    return;
 
@@ -44,39 +47,42 @@ while 1:
   #conn.send(data)  # echo
   # data processing
   split_data = data.split()
-  if split_data[0] == "x":
-    axis['x'] = int(split_data[1])
-    if state == "rov-drive":
-      CalculateHorizontalMotors()
-    # else do calculations based on manipulator design
-  elif split_data[0] == "y":
-    axis['y'] = int(split_data[1])
-    if state == "rov-drive":
-      CalculateHorizontalMotors()
-    # else do calculations based on manipulator design
-  elif split_data[0] == "z":
-    axis['z'] = int(split_data[1])
-    CalculateVerticalMotors()
-  elif split_data[0] == "1":
-    if state == "rov-drive":
-      state = "manipulator-drive"
-    else:
-      state = "rov-drive"
-    print state
-  elif split_data[0] == "2":
-    if manipulator_state != "grip":
-      manipulator_state = "grip"
-      print manipulator_state
-  elif split_data[0] == "3":
-    if pwm_list[0] < 2000:
-      pwm_list[6] +=50
-    print "camera servo: ", pwm_list[6]
-  elif split_data[0] == "4":
-    if manipulator_state != "release":
-      manipulator_state = "release"
-      print manipulator_state
-  elif split_data[0] == "5":
-    if pwm_list[0] >1000:
-      pwm_list[6] -=50
-    print "camera servo: ", pwm_list[6]
+  if len(split_data) > 2:
+    print "to be fixed"
+  else:
+    if split_data[0] == "x":
+      axis['x'] = int(split_data[1])
+      if state == "rov-drive":
+        CalculateHorizontalMotors()
+      # else do calculations based on manipulator design
+    elif split_data[0] == "y":
+      axis['y'] = int(split_data[1])
+      if state == "rov-drive":
+        CalculateHorizontalMotors()
+      # else do calculations based on manipulator design
+    elif split_data[0] == "z":
+      axis['z'] = int(split_data[1])
+      CalculateVerticalMotors()
+    elif split_data[0] == "1":
+      if state == "rov-drive":
+        state = "manipulator-drive"
+      else:
+        state = "rov-drive"
+      print state
+    elif split_data[0] == "2":
+      if manipulator_state != "grip":
+        manipulator_state = "grip"
+        print manipulator_state
+    elif split_data[0] == "3":
+      if pwm_list[0] < 2000:
+        pwm_list[6] +=50
+      print "camera servo: ", pwm_list[6]
+    elif split_data[0] == "4":
+      if manipulator_state != "release":
+        manipulator_state = "release"
+        print manipulator_state
+    elif split_data[0] == "5":
+      if pwm_list[0] >1000:
+        pwm_list[6] -=50
+      print "camera servo: ", pwm_list[6]
 conn.close()
